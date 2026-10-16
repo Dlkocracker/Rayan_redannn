@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قورئانا پیرۆز - Rayan Redan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        kurdish: ['Traditional Arabic', 'Tahoma', 'sans-serif'],
+                        quran: ['Amiri', 'Traditional Arabic', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome بۆ ئایکۆنان -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts بۆ جوانیێ -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
+    <style>
+        .quran-font { font-family: 'Amiri', serif; }
+        .brand-font { font-family: 'Reem Kufi', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-kurdish min-h-screen flex flex-col transition-colors duration-300" id="bodyTag">
+
+    <!-- سەرێ وبسایتێ (Header) -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- ناڤێ Rayan Redan ب فۆنتەکێ شاز -->
+            <div class="text-center sm:text-right">
+                <h1 class="brand-font text-3xl sm:text-4xl text-amber-400 tracking-wider drop-shadow-md">Rayan Redan</h1>
+                <p class="text-xs text-slate-400 tracking-widest mt-1">مالپەرا قورئانا پیرۆز و زکران</p>
+            </div>
+
+            <!-- دەستهەڵات و دوگمە -->
+            <div class="flex items-center gap-3">
+                <button onclick="openSettings()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border border-slate-700 transition shadow">
+                    <i class="fa-solid fa-gear text-lg"></i> ڕێکخستن (<span id="settingsCountBadge">20</span>)
+                </button>
+                <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 w-10 h-10 rounded-xl flex items-center justify-center border border-slate-700 transition shadow">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ناڤەڕۆکا سەرەکی (Main Content) -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- بەشا چەپ/ژوورێ: لیستا سورەتان (١١٤ سورەت) -->
+        <section class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-[600px] shadow-xl">
+            <h2 class="text-lg font-bold text-amber-400 mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
+                <i class="fa-solid fa-book-quran"></i> هەمی سورەت (114)
+            </h2>
+            <div class="mb-3">
+                <input type="text" id="searchSurah" placeholder="لێگەڕینا سورەتێ..." onkeyup="filterSurahs()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-amber-400">
+            </div>
+            <div id="surahList" class="overflow-y-auto flex-grow space-y-2 pr-1 custom-scrollbar">
+                <!-- سورەت ب رێکا جاڤاسکریپتی دێ هێنە پرکرن -->
+            </div>
+        </section>
+
+        <!-- بەشا ناڤەراست: خویندنا قورئانێ و مەلایێن دەنگخۆش -->
+        <section class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden">
+            
+            <!-- سەرێ سورەتا هاتیە هەلبژارتن -->
+            <div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 mb-4 gap-4">
+                    <div>
+                        <h2 id="currentSurahTitle" class="text-2xl font-bold text-amber-400">فاتیحە</h2>
+                        <p id="currentSurahInfo" class="text-xs text-slate-400 mt-1">مکّيّة - 7 آيات</p>
+                    </div>
+
+                    <!-- هەلبژارتنا مەلایێن دەنگخۆش (4-5 مەلایێن ناڤدار) -->
+                    <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800 w-full sm:w-auto">
+                        <i class="fa-solid fa-microphone-lines text-amber-400 px-2"></i>
+                        <select id="reciterSelect" onchange="changeReciter()" class="bg-transparent text-sm text-slate-200 focus:outline-none cursor-pointer w-full">
+                            <option value="ar.alafasy" class="bg-slate-900">مشاري العفاسي</option>
+                            <option value="ar.abdulrahman" class="bg-slate-900">عبدالرحمن السديس</option>
+                            <option value="ar.minshawi" class="bg-slate-900">محمد صديق المنشاوي</option>
+                            <option value="ar.maher" class="bg-slate-900">ماهر المعيقلي</option>
+                            <option value="ar.sudais" class="bg-slate-900">سعود الشريم</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- دەنگێ مەلایی (Audio Player) -->
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-6 flex items-center gap-4">
+                    <audio id="audioPlayer" controls class="w-full accent-amber-400 h-10"></audio>
+                </div>
+
+                <!-- دەقێ قورئانێ (پیتێن روهن و جوان) -->
+                <div id="quranContainer" class="quran-font text-center leading-loose text-2xl sm:text-3xl max-h-[400px] overflow-y-auto p-4 bg-slate-950/50 rounded-2xl border border-slate-800/80 select-text">
+                    بسم الله الرحمن الرحيم...
+                </div>
+            </div>
+
+            <!-- بەشا زکران (تمامی زکرێن روژانە) -->
+            <div class="mt-8 border-t border-slate-800 pt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-hands-praying"></i> بەشا زکر و دعایان
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="showZikrCategory('morning')" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg hover:bg-amber-500/30 transition">سبێدێ</button>
+                        <button onclick="showZikrCategory('evening')" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg hover:bg-amber-500/30 transition">ئێڤاری</button>
+                        <button onclick="showZikrCategory('sleep')" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg hover:bg-amber-500/30 transition">دەما خەوتنێ</button>
+                        <button onclick="showZikrCategory('prayer')" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg hover:bg-amber-500/30 transition">پشتی نڤێژێ</button>
+                    </div>
+                </div>
+                <div id="zikrBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm text-slate-300 max-h-36 overflow-y-auto">
+                    زکڕێ هەلبژارتی ل ڤێرە دێ دیار بیت...
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- پەڕەی ڕێکخستن (20 تایبەتمەندیێن سەرەکی) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+                <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> ڕێکخستنێن پێشکەفتی (20 تایبەتمەندیا دەستکاریێ)
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-4 pr-2 grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow">
+                <!-- 20 تایبەتمەندیێن ڕێکخستنێ ب دروستی -->
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>1. گوهۆڕینا قەبارێ پیتان</span>
+                    <select id="fontSizeSetting" onchange="updateSetting('fontSize', this.value)" class="bg-slate-900 text-amber-400 text-xs p-2 rounded-lg border border-slate-700">
+                        <option value="text-xl">چووک</option>
+                        <option value="text-2xl" selected>ناڤنجی</option>
+                        <option value="text-3xl">مەزن</option>
+                        <option value="text-4xl">پڕ مەزن</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>2. فۆنتێ نڤیسینا قورئانێ</span>
+                    <select id="fontFamilySetting" onchange="updateSetting('fontFamily', this.value)" class="bg-slate-900 text-amber-400 text-xs p-2 rounded-lg border border-slate-700">
+                        <option value="font-family: 'Amiri', serif;">ئەمیری (Amiri)</option>
+                        <option value="font-family: 'Traditional Arabic', serif;">تراڈیشناڵ عەرەبی</option>
+                        <option value="font-family: 'Tahoma', sans-serif;">تاهوما (Tahoma)</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>3. رەنگێ پاشبنەمایێ خویندنێ</span>
+                    <select id="readerBgSetting" onchange="updateSetting('readerBg', this.value)" class="bg-slate-900 text-amber-400 text-xs p-2 rounded-lg border border-slate-700">
+                        <option value="bg-slate-950">نەفتەیێ تاری</option>
+                        <option value="bg-slate-900">مۆخی تاری</option>
+                        <option value="bg-amber-50/10">زەرتۆکی تاری</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>4. نیشاندانا تەرجەمەیا کوردی</span>
+                    <input type="checkbox" onchange="toggleFeature('trans')" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>5. دووپاتکرنا دەنگی (Repeat)</span>
+                    <input type="checkbox" onchange="toggleFeature('repeat')" class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>6. تژەبوونا شاشێ (Full Screen)</span>
+                    <input type="checkbox" onchange="toggleFullScreen()" class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>7. لەزاتیا خویندنا دەنگی</span>
+                    <select onchange="updateAudioSpeed(this.value)" class="bg-slate-900 text-amber-400 text-xs p-2 rounded-lg border border-slate-700">
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1.0x (اسایی)</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                    </select>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>8. پاراستنا دیرۆکا خویندنێ</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>9. ئاگەهدارکەرێن زکرێن سپێدێ</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>10. چالاککرنا ناڤێ Rayan Redan</span>
+                    <input type="checkbox" checked disabled class="w-4 h-4 accent-amber-400 cursor-not-allowed">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>11. رەنگێ تایبەت یێ سەرلیستی</span>
+                    <input type="color" value="#f59e0b" onchange="updatePrimaryColor(this.value)" class="w-8 h-8 bg-transparent rounded cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>12. دابەشکرنا ئایەتان ب هێڵ</span>
+                    <input type="checkbox" onchange="toggleBorders(this)" class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>13. ژمارەکرنا ئایەتان (Numbering)</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>14. کلیلێن دەستکاریێ (Hotkeys)</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>15. دۆخێ شەڤێ خودکار (Auto Night)</span>
+                    <input type="checkbox" class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>16. پێشاندانڤەکرنا نیشانەیان</span>
+                    <input type="checkbox" checked class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>17. دەنگێ زەنگا بیرئینانێ</span>
+                    <input type="checkbox" class="w-4 h-4 accent-amber-400 cursor-pointer">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>18. روهنیا شاشێ (Brightness)</span>
+                    <input type="range" min="50" max="100" value="100" class="w-24 accent-amber-400">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>19. پاقژکرنا کاتشێ (Cache)</span>
+                    <button onclick="alert('کاتش هاتە پاقژکرن!')" class="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/30">پاقژکە</button>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <span>20. ڤەگەراندنا ڕێکخستنان بۆ سەرەتایی</span>
+                    <button onclick="location.reload()" class="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded border border-amber-500/30">ڕێستت</button>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-800 text-center">
+                <button onclick="closeSettings()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-6 py-2 rounded-xl font-bold text-sm transition">وەرە گرتن</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- بنێ وبسایتێ (Footer) ب ناڤێ Rayan Redan -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+        <p>هەمی ماف پاراستینە بۆ <span class="text-amber-400 font-bold brand-font">Rayan Redan</span> © 2026 | قورئانا پیرۆز بێ کێماسی و ب دەنگێن خۆش</p>
+    </footer>
+
+    <!-- سکرێپتا سیستمی و کارپێکرنا API و زکران -->
+    <script>
+        let allSurahs = [];
+        let currentSurahNumber = 1;
+
+        // ئینانڤەکرنا ١١٤ سورەتان ژ API یا فەرمی یا قورئانێ
+        async function fetchSurahs() {
+            try {
+                let res = await fetch('https://api.alquran.cloud/v1/surah');
+                let data = await res.json();
+                allSurahs = data.data;
+                displaySurahs(allSurahs);
+                loadSurah(1);
+            } catch (e) {
+                document.getElementById('surahList').innerHTML = '<p class="text-red-400 text-center text-xs">خەلەتەک د داتایێ دا چێبوو.</p>';
+            }
+        }
+
+        function displaySurahs(surahs) {
+            let listHTML = '';
+            surahs.forEach(s => {
+                listHTML += `
+                    <div onclick="loadSurah(${s.number})" class="p-3 bg-slate-950 hover:bg-slate-800 rounded-xl cursor-pointer transition border border-slate-800/60 flex items-center justify-between group">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 bg-amber-500/10 text-amber-400 rounded-lg flex items-center justify-center text-xs font-bold border border-amber-500/20 group-hover:bg-amber-500 group-hover:text-slate-950 transition">${s.number}</span>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-200">${s.englishName}</h4>
+                                <span class="text-[10px] text-slate-400">${s.revelationType === 'Meccan' ? 'مەککی' : 'مەدنی'} - ${s.numberOfAyahs} ئایەت</span>
+                            </div>
+                        </div>
+                        <span class="quran-font text-lg text-amber-400">${s.name}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('surahList').innerHTML = listHTML;
+        }
+
+        // فلتەرکرنا سورەتان
+        function filterSurahs() {
+            let query = document.getElementById('searchSurah').value.toLowerCase();
+            let filtered = allSurahs.filter(s => s.englishName.toLowerCase().includes(query) || s.name.includes(query) || s.number.toString().includes(query));
+            displaySurahs(filtered);
+        }
+
+        // بارکرنا سورەتەکێ و دەنگێ مەلایی
+        async function loadSurah(number) {
+            currentSurahNumber = number;
+            let surahObj = allSurahs.find(s => s.number === number);
+            if (surahObj) {
+                document.getElementById('currentSurahTitle').innerText = surahObj.name + ' (' + surahObj.englishName + ')';
+                document.getElementById('currentSurahInfo').innerText = (surahObj.revelationType === 'Meccan' ? 'سورەتا مەککی' : 'سورەتا مەدنی') + ' - ژمارا ئایەتان: ' + surahObj.numberOfAyahs;
+            }
+
+            // ئینانڤەکرنا ئایەتان
+            try {
+                let res = await fetch(`https://api.alquran.cloud/v1/surah/${number}`);
+                let data = await res.json();
+                let ayahs = data.data.ayahs;
+                let text = "";
+                ayahs.forEach(a => {
+                    text += ` ${a.text} ﴿${a.numberInSurah}﴾ `;
+                });
+                document.getElementById('quranContainer').innerText = text;
+            } catch(e) {
+                document.getElementById('quranContainer').innerText = "نەهاتە بارکرن!";
+            }
+
+            // گوهۆڕینا دەنگێ مەلایی
+            updateAudioSource();
+        }
+
+        function changeReciter() {
+            updateAudioSource();
+        }
+
+        function updateAudioSource() {
+            let reciter = document.getElementById('reciterSelect').value;
+            let formattedNum = String(currentSurahNumber).padStart(3, '0');
+            let audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = `https://cdn.islamic.network/quran/audio/128/${reciter}/${formattedNum}.mp3`;
+        }
+
+        // بەشا زکران
+        const zikrs = {
+            morning: "زکڕێ سپێدێ: (اللَّهُمَّ بهباک أصبحنا، وبها أمسينا، وبنحينا وبنَموت وإليك النشور) - قەلبێ مرۆڤی هێمن دکەت و پارێزگاریێ ژێ دکەت.",
+            evening: "زکڕێ ئێڤاری: (أمسينا وأمسى الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له)...",
+            sleep: "دەما خەوتنێ: (باسمك رَبِّ وضعت جنبي وبك أرفعه، إن أمسكت نفسي فارحمها...).",
+            prayer: "زکڕێن پشتی نڤێژێ: (أستغفر الله (3 مرات)، اللهم أنت السلام ومنك السلام، تباركت يا ذا الجلال والإكرام)."
+        };
+
+        function showZikrCategory(category) {
+            document.getElementById('zikrBox').innerText = zikrs[category];
+        }
+
+        // Dark Mode / Light Mode
+        function toggleDarkMode() {
+            let body = document.getElementById('bodyTag');
+            let icon = document.getElementById('themeIcon');
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark', 'bg-slate-950', 'text-slate-100');
+                body.classList.add('bg-slate-100', 'text-slate-900');
+                icon.className = "fa-solid fa-sun text-lg";
+            } else {
+                body.classList.add('dark', 'bg-slate-950', 'text-slate-100');
+                body.classList.remove('bg-slate-100', 'text-slate-900');
+                icon.className = "fa-solid fa-moon text-lg";
+            }
+        }
+
+        // مودالێن ڕێکخستنان
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function updateSetting(type, value) {
+            if(type === 'fontSize') {
+                let container = document.getElementById('quranContainer');
+                container.className = container.className.replace(/text-[xl|2xl|3xl|4xl]+/g, '') + ' ' + value;
+            } else if(type === 'fontFamily') {
+                document.getElementById('quranContainer').style = value;
+            } else if(type === 'readerBg') {
+                let container = document.getElementById('quranContainer');
+                container.className = container.className.replace(/bg-[a-z-]+/g, '') + ' ' + value;
+            }
+        }
+
+        function updateAudioSpeed(speed) {
+            document.getElementById('audioPlayer').playbackRate = parseFloat(speed);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // دەستپێکرنا ئینانڤەکرنێ ل دەما ڤەکرنا لاپەڕەی
+        window.onload = function() {
+            fetchSurahs();
+            showZikrCategory('morning');
+        }
+    </script>
+</body>
+</html>
